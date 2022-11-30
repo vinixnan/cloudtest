@@ -8,7 +8,7 @@ phases:
       - BucketName=$(aws ssm get-parameter --name APIStaticBucketName --query Parameter.Value | xargs)
       - APIUrl=$(aws ssm get-parameter --name APIUrl --query Parameter.Value | xargs)
       - lambdaname=$(aws ssm get-parameter --name LambdaName --query Parameter.Value | xargs)
-      - cd resources/frontendcode
+      - cd extraexercise/resources/frontendcode
       - npm install
       - echo $BucketName
       - echo $APIUrl
