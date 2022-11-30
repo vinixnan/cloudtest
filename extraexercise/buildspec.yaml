@@ -26,6 +26,6 @@ phases:
 
 artifacts:
   files:
-    - resources/frontendcode/build/**/*
-    - resources/frontendcode/src/**/*
-    - resources/frontendcode/package.json
+    - extraexercise/resources/frontendcode/build/**/*
+    - extraexercise/resources/frontendcode/src/**/*
+    - extraexercise/resources/frontendcode/package.json
