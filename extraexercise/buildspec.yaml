@@ -18,7 +18,7 @@ phases:
       - echo REACT_APP_API_URL=\"$APIUrl\" > .env
       - npm run build
       - aws s3 sync ./build s3://$BucketName
-      - cd ../ && zip -j -r backend.zip backend/*
+      - cd ../ && zip -j -r backend.zip backendcode/*
       - aws lambda update-function-code --function-name  $lambdaname --zip-file fileb://backend.zip
   post_build:
     commands:
