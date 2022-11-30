@@ -1,5 +1,7 @@
 # Exercise #3
 
+<http://ftf.vinicius.static.apisite.s3-website-us-east-1.amazonaws.com/>
+
 ## Deploy a full application
 
 ![alt text](https://github.com/vinixnan/cloudtest/blob/main/diagram/ex3.png?raw=true)

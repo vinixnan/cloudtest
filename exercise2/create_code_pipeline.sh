@@ -5,8 +5,3 @@ codestararn="arn:aws:codestar-connections:us-east-1:388895620167:connection/92de
 source util.sh
 
 create_stack $stackname"codepipeline" "codepipeline.yaml" "--parameters ParameterKey=SourceConnectionArn,ParameterValue="$codestararn
-
-#echo static website url
-myregion=$(aws configure get region)
-BucketName=$(aws ssm get-parameter --name StaticSiteBucketName --query Parameter.Value | xargs)
-echo http://$BucketName.s3-website-${myregion}.amazonaws.com/
