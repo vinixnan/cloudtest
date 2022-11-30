@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create a SNS Topic and Subscribe to an email
+Parameters:
+  TopicName:
+    Type: String
+    Default: "ftfexercise2sns"
+  EmailForSNS:
+    Type: String
+
+Resources:
+  #Create SNS Topic
+  MySNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Ref TopicName
+
+  #Create SNS Email subscription
+  Subscription:
+    Type: "AWS::SNS::Subscription"
+    Properties:
+      TopicArn: !Ref MySNSTopic
+      Endpoint: !Ref EmailForSNS
+      Protocol: email
+
+  #Save SNS Topic ARN at SSM
+  TopicARNParameter:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Name: SNSTopicArn
+      Type: String
+      Value: !Ref MySNSTopic
+    DependsOn:
+      - MySNSTopic
+
+Outputs:
+  MyTopicArn:
+    Description: Arn of Created SNS Topic
+    Value: !Ref MySNSTopic

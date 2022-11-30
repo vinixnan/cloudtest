@@ -1,0 +1,212 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create codebuild and codepipeline using parameters from SSM and command line
+Parameters:
+  StaticSiteBucketName:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: StaticSiteBucketName
+  ArtifactBucketName:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: ArtifactBucketName
+  SNSTopicArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: SNSTopicArn
+  SourceConnectionArn:
+    Type: String
+  GithubProjecName:
+    Type: String
+    Default: "vinixnan/cloudtest"
+  GithubBranch:
+    Type: String
+    Default: "main"
+
+Resources:
+  #CodeBuild Role
+  CodeBuildRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+        Version: 2012-10-17
+      Path: /
+      Policies:
+        - PolicyName: CodeBuildAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetBucketPolicy
+                  - s3:GetObject
+                  - s3:DeleteObject
+                  - s3:GetObjectVersion
+                  - s3:GetBucketVersioning
+                  - s3:ListBucket
+                  - s3:GetBucketLocation
+                Resource:
+                  - !Sub "arn:aws:s3:::${StaticSiteBucketName}/*"
+                  - !Sub "arn:aws:s3:::${StaticSiteBucketName}"
+              - Effect: Allow
+                Action:
+                  - "sns:*"
+                Resource: !Ref SNSTopicArn
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:PutLogEvents"
+                  - "logs:CreateLogStream"
+                  - "codebuild:CreateReportGroup"
+                  - "codebuild:CreateReport"
+                  - "codebuild:UpdateReport"
+                  - "codebuild:BatchPutCodeCoverages"
+                  - "codebuild:BatchPutTestCases"
+                  - "ssm:GetParameters"
+                  - "ssm:GetParameter"
+                Resource: "*"
+
+  #Code Build Specification
+  CodeBuildSpec:
+    Type: "AWS::CodeBuild::Project"
+    Properties:
+      BadgeEnabled: true
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: "aws/codebuild/standard:5.0"
+        PrivilegedMode: true
+        EnvironmentVariables:
+          - Name: varName1
+            Value: varValue1
+          - Name: varName2
+            Value: varValue2
+            Type: PLAINTEXT
+      Source:
+        Type: GITHUB
+        Location: !Join
+          - ""
+          - - "https://github.com/"
+            - !Ref GithubProjecName
+            - ".git"
+        BuildSpec: buildspec.yaml
+      TimeoutInMinutes: 10
+
+  #Code Pipeline Role
+  PipeLineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+            Action:
+              - sts:AssumeRole
+
+  #Code Pipeline Policy
+  PipeLinePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: "pipeline-policy"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "sns:*"
+            Resource: !Ref SNSTopicArn
+          - Effect: Allow
+            Action:
+              - codestar-connections:UseConnection
+            Resource: !Ref SourceConnectionArn
+          - Effect: Allow
+            Action:
+              - cloudformation:Describe*
+              - cloudFormation:List*
+              - cloudformation:CreateStack
+              - cloudformation:DeleteStack
+              - cloudformation:DescribeStacks
+              - cloudformation:UpdateStack
+              - cloudformation:CreateChangeSet
+              - cloudformation:DeleteChangeSet
+              - cloudformation:DescribeChangeSet
+              - cloudformation:ExecuteChangeSet
+              - cloudformation:SetStackPolicy
+              - cloudformation:ValidateTemplate
+              - cloudformation:UpdateTerminationProtection
+              - cloudformation:TagResource
+              - cloudformation:UntagResource
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - iam:PassRole
+              - codebuild:StartBuild
+              - codebuild:BatchGetBuilds
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+              - s3:GetBucketPolicy
+              - s3:GetObject
+              - s3:GetObjectVersion
+              - s3:GetBucketVersioning
+              - s3:ListBucket
+            Resource:
+              - !Sub "arn:aws:s3:::${ArtifactBucketName}/*"
+              - !Sub "arn:aws:s3:::${ArtifactBucketName}"
+      Roles:
+        - !Ref PipeLineRole
+
+  #Code Pipeline definition
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactBucketName
+      RoleArn: !GetAtt PipeLineRole.Arn
+      Stages:
+        # 1 stage - source - github
+        - Name: Source
+          Actions:
+            - Name: SourceAction
+              RunOrder: 1
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeStarSourceConnection
+                Version: "1"
+              Configuration:
+                ConnectionArn: !Ref SourceConnectionArn
+                FullRepositoryId: !Ref GithubProjecName
+                BranchName: !Ref GithubBranch
+                DetectChanges: true
+              OutputArtifacts:
+                - Name: SourceOutput
+        # 2 stage - build - CodeBuild
+        - Name: Build
+          Actions:
+            # 2.1 - create changeset
+            - Name: ValidateTemplate
+              RunOrder: 1
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: "1"
+              InputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                ProjectName: !Ref CodeBuildSpec
+              OutputArtifacts:
+                - Name: BuildOutput

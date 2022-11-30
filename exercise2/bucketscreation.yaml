@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create Buckets for static website and for codepipeline
+Parameters:
+  StaticSiteBucketName:
+    Type: String
+    Default: "ftf.vinicius.bucket.exercise2"
+  ArtifactBucketName:
+    Type: String
+    Default: "ftf.vinicius.artifact-bucket.exercise2"
+
+Resources:
+  #Save bucket name at parameter store
+  StaticSiteBucketNameSSM:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Name: StaticSiteBucketName
+      Type: String
+      Value: !Ref StaticSiteBucketName
+
+  #Save bucket name at parameter store
+  ArtifactBucketNameSSM:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Name: ArtifactBucketName
+      Type: String
+      Value: !Ref ArtifactBucketName
+
+  #Bucket policy for static website
+  S3Policy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref StaticSiteBucketName
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - "s3:GetObject"
+            Effect: Allow
+            Resource: !Join
+              - ""
+              - - "arn:aws:s3:::"
+                - !Ref StaticSiteBucketName
+                - /*
+            Principal: "*"
+
+  #Create static website bucket
+  MainBucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      AccessControl: PublicRead
+      BucketName: !Ref StaticSiteBucketName
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      WebsiteConfiguration:
+        IndexDocument: index.html
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  #Create artifact bucket
+  ArtifactBucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Ref ArtifactBucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+Outputs:
+  WebsiteURL:
+    Value: !GetAtt
+      - MainBucket
+      - WebsiteURL
+    Description: URL for website hosted on S3
+  ArtifactURL:
+    Value: !GetAtt
+      - ArtifactBucket
+      - WebsiteURL
+    Description: URL for S3 artifact

@@ -1,0 +1,29 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 14.x
+    commands:
+      - TopicARN=$(aws ssm get-parameter --name SNSTopicArn --query Parameter.Value | xargs)
+      - BucketName=$(aws ssm get-parameter --name StaticSiteBucketName --query Parameter.Value | xargs)
+      - message="Failed on building"
+      - cd exercise2/resources/frontendcode
+      - npm install
+      - echo $TopicARN
+      - echo $BucketName
+  build:
+    commands:
+      - npm run build
+      - aws s3 sync ./build s3://$BucketName
+      - message="Sucess on building"
+  post_build:
+    commands:
+      - aws sns publish --topic-arn $TopicARN --message $message
+      - echo $message
+
+artifacts:
+  files:
+    - exercise2/resources/frontendcode/build/**/*
+    - exercise2/resources/frontendcode/src/**/*
+    - exercise2/resources/frontendcode/package.json
