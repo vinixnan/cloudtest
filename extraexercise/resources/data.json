@@ -1,0 +1,10 @@
+{
+    "operation": "create",
+    "tableName": "Contact",
+    "payload": {
+      "Item": {
+        "name": "Bob",
+        "text": "Hello"
+      }
+    }
+  }

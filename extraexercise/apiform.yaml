@@ -1,0 +1,226 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Creates a REST API Gateway which invokes a Lambda function who writes to a DynamoDB table.
+Parameters:
+  lambdaName:
+    Type: String
+    Default: "crudlambda"
+  APIStaticBucketName:
+    Type: String
+    Default: "ftf.vinicius.static.apisite"
+Resources:
+  #Create a DynamoDB Table to save contacts
+  ContactDynamoTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      TableName: Contact
+
+  #Lambda function to write in Contact table
+  CRUDLambdaFunction:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: !Ref lambdaName
+      Handler: LambdaFunctionOverHttps.handler
+      Runtime: python3.8
+      Code:
+        ZipFile: >
+          def handler(event, context):
+            pass
+      Role: !GetAtt
+        - LambdaExecutionRole
+        - Arn
+      Timeout: "30"
+    DependsOn:
+      - LambdaExecutionRole
+
+  #Role which allows Lambda to write in Contact dynamo table
+  LambdaExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      Policies:
+        - PolicyName: LambdaPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource:
+                  - "*"
+                Effect: Allow
+              - Action:
+                  - "dynamodb:PutItem"
+                  - "dynamodb:DeleteItem"
+                  - "dynamodb:GetItem"
+                  - "dynamodb:PutItem"
+                  - "dynamodb:Query"
+                  - "dynamodb:Scan"
+                  - "dynamodb:UpdateItem"
+                Resource: !GetAtt
+                  - ContactDynamoTable
+                  - Arn
+                Effect: Allow
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+
+  #ApiGwAccountConfig and ApiGatewayLoggingRole are necessary to allow API gateway to publish in CloudWatchLogs
+  ApiGwAccountConfig:
+    Type: "AWS::ApiGateway::Account"
+    Properties:
+      CloudWatchRoleArn: !GetAtt "ApiGatewayLoggingRole.Arn"
+
+  ApiGatewayLoggingRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - "apigateway.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - !Sub "arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+
+  # Register an API in API Gateway
+  ApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: Contact API
+      Description: An REST API which allows users to POST their contact messages
+
+  # Mark it as a "proxy" integration that forwards all requests to CRUDLambdaFunction
+  ApiGatewayMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: ANY
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          - LambdaArn: !GetAtt CRUDLambdaFunction.Arn
+      ResourceId: !GetAtt ApiGateway.RootResourceId
+      RestApiId: !Ref ApiGateway
+
+  #Create a deployment for API Gateway
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - ApiGatewayMethod
+    Properties:
+      RestApiId: !Ref ApiGateway
+
+  # Enable logging of all HTTP requests
+  ApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      DeploymentId: !Ref ApiGatewayDeployment
+      MethodSettings:
+        - HttpMethod: "*"
+          LoggingLevel: INFO
+          ResourcePath: /*
+          DataTraceEnabled: true
+      RestApiId: !Ref ApiGateway
+      StageName: echo
+
+  # Grant permission for the newly created API to invoke our Lambda function
+  LambdaApiGatewayInvoke:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt CRUDLambdaFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*/
+
+  APIUrl:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Name: APIUrl
+      Type: String
+      Value: !Sub
+        - https://${ApiId}.execute-api.${AWS::Region}.amazonaws.com/${StageName}
+        - ApiId: !Ref ApiGateway
+          StageName: !Ref ApiStage
+    DependsOn:
+      - ApiGateway
+      - ApiStage
+
+  LambdaNameSSM:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Name: LambdaName
+      Type: String
+      Value: !Ref lambdaName
+
+  #Bucket to deploy static site
+  APIStaticMainBucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      AccessControl: PublicRead
+      BucketName: !Ref APIStaticBucketName
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      MetricsConfigurations:
+        - Id: EntireBucket
+      WebsiteConfiguration:
+        IndexDocument: index.html
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  #Parameter store to save this bucket name
+  BucketNameParameter:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Name: APIStaticBucketName
+      Type: String
+      Value: !Ref APIStaticBucketName
+
+  #Bucket Policy
+  ApiStaticS3Policy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref APIStaticBucketName
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - "s3:GetObject"
+            Effect: Allow
+            Resource: !Join
+              - ""
+              - - "arn:aws:s3:::"
+                - !Ref APIStaticBucketName
+                - /*
+            Principal: "*"
+
+Outputs:
+  ApiUrl:
+    Value: !Sub
+      - https://${ApiId}.execute-api.${AWS::Region}.amazonaws.com/${StageName}
+      - ApiId: !Ref ApiGateway
+        StageName: !Ref ApiStage

@@ -1,0 +1,31 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 14.x
+    commands:
+      - BucketName=$(aws ssm get-parameter --name APIStaticBucketName --query Parameter.Value | xargs)
+      - APIUrl=$(aws ssm get-parameter --name APIUrl --query Parameter.Value | xargs)
+      - lambdaname=$(aws ssm get-parameter --name LambdaName --query Parameter.Value | xargs)
+      - cd resources/frontendcode
+      - npm install
+      - echo $BucketName
+      - echo $APIUrl
+      - echo $lambdaname
+  build:
+    commands:
+      - echo REACT_APP_API_URL=\"$APIUrl\" > .env
+      - npm run build
+      - aws s3 sync ./build s3://$BucketName
+      - cd ../ && zip -j -r backend.zip backend/*
+      - aws lambda update-function-code --function-name  $lambdaname --zip-file fileb://backend.zip
+  post_build:
+    commands:
+      - echo "Finished"
+
+artifacts:
+  files:
+    - resources/frontendcode/build/**/*
+    - resources/frontendcode/src/**/*
+    - resources/frontendcode/package.json
