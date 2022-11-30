@@ -6,7 +6,7 @@ aws cloudformation create-stack --stack-name $stackname  --template-body file://
 echo "Wait for the creation"
 aws cloudformation wait stack-create-complete --stack-name $stackname
 echo "Upload file to bucket s3://"$bucketname
-aws s3 cp curlme.txt s3://$bucketname
+aws s3 cp resources/curlme.txt s3://$bucketname
 #get static website from cloudformation output
 bucket_public_url=$(aws cloudformation describe-stacks --stack-name $stackname --query "Stacks[0].Outputs[0].OutputValue" | xargs)
 #echo the full url

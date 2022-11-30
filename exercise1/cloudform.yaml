@@ -3,7 +3,7 @@ Description: Create a bucket FTF exercise
 Parameters:
   BucketName:
     Type: String
-    Default: "ftf.vinicius.bucket.exercise"
+    Default: "ftf.vinicius.bucket.exercise1"
 
 Resources:
   #Bucket policy to make it public for getting objects
