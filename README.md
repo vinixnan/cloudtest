@@ -24,13 +24,13 @@ The following tools were considered in all the tests.
 | Diagrams  | A python library to generate diagrams as code <https://diagrams.mingrammer.com/> | - |
 | Shell Script  | Scripts to make my life easier (or not)  | - |
 
-## Before started
+## Before start
 
 Please, make sure you have AWS CLI installed. You gonna need a user with administrator access (AdministratorAccess policy) and configure it by typing ``aws configure``. You also gonna need to provide a GitHub connection (follow the steps at <https://docs.aws.amazon.com/codepipeline/latest/userguide/connections-github.html>) and save the resulting ARN in ``SSM Parameter Store`` as ``CodeStarARN``(see the figure). After this, also set an email also in the Parameter store under the key ``EmailToSendNotification``.
 
 ![alt text](https://github.com/vinixnan/cloudtest/blob/main/diagram/parameters.png?raw=true)
 
-## Outcome
+## Expected Results
 
 ### Bucket exercise
 
