@@ -2,9 +2,9 @@
 stackname="bucketexercise"
 bucketname="ftf.vinicius.bucket.exercise"
 echo "Create Stack"
-aws cloudformation create-stack --stack-name $stackname  --template-body file://cloudform.yaml
+aws cloudformation create-stack --stack-name $stackname  --template-body file://cloudform.yaml --parameters ParameterKey=BucketName,ParameterValue=$bucketname | xargs
 echo "Wait for the creation"
-aws cloudformation wait stack-create-complete --stack-name $stackname "--parameters ParameterKey=BucketName,ParameterValue="$bucketname
+aws cloudformation wait stack-create-complete --stack-name $stackname
 echo "Upload file to bucket s3://"$bucketname
 aws s3 cp resources/curlme.txt s3://$bucketname
 #get static website from cloudformation output
