@@ -42,6 +42,15 @@ Resources:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
 
+  #Save bucket name at parameter store
+  ArtifactBucketNameSSM:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Name: StaticSiteBucketNameEx1
+      Type: String
+      Value: !GetAtt
+        - MainBucket
+        - WebsiteURL
 Outputs:
   WebsiteURL:
     Value: !GetAtt

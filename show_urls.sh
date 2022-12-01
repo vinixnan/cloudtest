@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Exercise #1 website"
-bucket_public_url=$(aws cloudformation describe-stacks --stack-name "bucketexercise" --query "Stacks[0].Outputs[0].OutputValue" | xargs)
+bucket_public_url=$(aws ssm get-parameter --name StaticSiteBucketNameEx1 --query Parameter.Value | xargs)
 echo $bucket_public_url/curlme.txt
 
 echo "Exercise #2 website"
