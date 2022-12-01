@@ -17,23 +17,6 @@ Parameters:
     Default: "APIStaticBucketName"
 
 Resources:
-  S3ArtifactBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref ArtifactBucketName
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Action:
-              - "s3:GetObject"
-            Effect: Allow
-            Resource: !Join
-              - ""
-              - - "arn:aws:s3:::"
-                - !Ref ArtifactBucketName
-                - /*
-            Principal: "*"
-
   CodeBuildRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -94,6 +77,12 @@ Resources:
   ArtifactBucket:
     Type: "AWS::S3::Bucket"
     Properties:
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
       BucketName: !Ref ArtifactBucketName
       BucketEncryption:
         ServerSideEncryptionConfiguration:
