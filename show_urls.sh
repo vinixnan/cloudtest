@@ -1,4 +1,6 @@
 #!/bin/bash
+source credential.sh
+aws sts get-caller-identity | jq
 echo "Exercise #1 website"
 bucket_public_url=$(aws ssm get-parameter --name StaticSiteBucketNameEx1 --query Parameter.Value | xargs)
 echo $bucket_public_url/curlme.txt
