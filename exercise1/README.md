@@ -10,6 +10,12 @@ You can open the `http://ftf.vinicius.bucket.exercise.s3-website-us-east-1.amazo
 curl http://ftf.vinicius.bucket.exercise.s3-website-us-east-1.amazonaws.com/curlme.txt
 ```
 
+## How to easily run
+
+```sh
+./run.sh
+```
+
 ## Files Description
 
 | File  | Description  | Parameter |

@@ -19,6 +19,13 @@ You can open the latest build link at:
 
 Everything was created using `Cloudformation`.
 
+## How to easily run
+
+```sh
+./create_sns_bucket.sh
+./create_code_pipeline.sh
+```
+
 ## Files Description
 
 | File  | Description  | Parameters
