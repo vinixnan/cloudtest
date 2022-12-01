@@ -152,9 +152,6 @@ Resources:
               - cloudformation:UpdateTerminationProtection
               - cloudformation:TagResource
               - cloudformation:UntagResource
-            Resource: "*"
-          - Effect: Allow
-            Action:
               - iam:PassRole
               - codebuild:StartBuild
               - codebuild:BatchGetBuilds

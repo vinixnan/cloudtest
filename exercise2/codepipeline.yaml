@@ -41,11 +41,6 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "logs:GetLogEvents"
-                  - "logs:PutLogEvents"
-                Resource: "*"
-              - Effect: Allow
-                Action:
                   - s3:PutObject
                   - s3:GetBucketPolicy
                   - s3:GetObject
@@ -76,8 +71,9 @@ Resources:
                 Resource: !Ref SNSTopicArn
               - Effect: Allow
                 Action:
-                  - "logs:CreateLogGroup"
+                  - "logs:GetLogEvents"
                   - "logs:PutLogEvents"
+                  - "logs:CreateLogGroup"
                   - "logs:CreateLogStream"
                   - "codebuild:CreateReportGroup"
                   - "codebuild:CreateReport"
@@ -158,9 +154,6 @@ Resources:
               - cloudformation:UpdateTerminationProtection
               - cloudformation:TagResource
               - cloudformation:UntagResource
-            Resource: "*"
-          - Effect: Allow
-            Action:
               - iam:PassRole
               - codebuild:StartBuild
               - codebuild:BatchGetBuilds
