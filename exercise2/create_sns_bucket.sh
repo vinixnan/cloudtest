@@ -1,6 +1,6 @@
 #!/bin/bash
 stackname="pipelineexercise"
-email="vinyciux@gmail.com"
+email=$(aws ssm get-parameter --name EmailToSendNotification --query Parameter.Value | xargs)
 
 source util.sh
 
