@@ -11,6 +11,7 @@ A succinct description of each test. More information is in their respective fol
 | [exercise2](https://github.com/vinixnan/cloudtest/tree/main/exercise2) | Create a CI/CD exercise | <http://ftf.vinicius.bucket.exercise2.s3-website-us-east-1.amazonaws.com/> |
 | [extraexercise](https://github.com/vinixnan/cloudtest/tree/main/extraexercise) | A harder `Create a CI/CD exercise` where Lambda, DynamoDB, and APIGateway are employed. I hope you like | <http://ftf.vinicius.static.apisite.s3-website-us-east-1.amazonaws.com/> |
 | show_urls.sh | A simple script to take all the static website URLs | - |
+| credential.sh | The place where you will set ``AWS_ACCESS_KEY_ID`` and ``AWS_SECRET_ACCESS_KEY`` | - |
 
 ## Tools
 
@@ -29,6 +30,14 @@ The following tools were considered in all the tests.
 Please, make sure you have AWS CLI installed. You gonna need a user with administrator access (AdministratorAccess policy) and configure it by typing ``aws configure``. You also gonna need to provide a GitHub connection (follow the steps at <https://docs.aws.amazon.com/codepipeline/latest/userguide/connections-github.html>) and save the resulting ARN in ``SSM Parameter Store`` as ``CodeStarARN``(see the figure). After this, also set an email also in the Parameter store under the key ``EmailToSendNotification``.
 
 ![alt text](https://github.com/vinixnan/cloudtest/blob/main/diagram/parameters.png?raw=true)
+
+Finally, edit credentials.sh
+
+```
+    export AWS_ACCESS_KEY_ID=
+    export AWS_SECRET_ACCESS_KEY=
+    export AWS_SESSION_TOKEN=""
+```
 
 ## Expected Results
 

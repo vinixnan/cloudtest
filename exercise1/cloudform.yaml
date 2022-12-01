@@ -1,6 +1,9 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Create a bucket FTF exercise
 Parameters:
+  CallingUserArn:
+    Description: Calling user ARN
+    Type: String
   BucketName:
     Type: String
     Default: "ftf.vinicius.bucket.exercise1"
@@ -23,6 +26,55 @@ Resources:
                 - !Ref BucketName
                 - /*
             Principal: "*"
+          - Action:
+              - s3:*
+            Effect: Allow
+            Resource: !Join
+              - ""
+              - - "arn:aws:s3:::"
+                - !Ref BucketName
+                - /*
+            Principal:
+              AWS: !GetAtt S3WriteRole.Arn
+    DependsOn:
+      - S3WriteRole
+
+  S3WriteRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: S3WriteRole
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              AWS: !Ref CallingUserArn
+        Version: 2012-10-17
+      Path: /
+      Policies:
+        - PolicyName: S3Acess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetBucketPolicy
+                  - s3:GetObject
+                  - s3:DeleteObject
+                  - s3:GetObjectVersion
+                  - s3:GetBucketVersioning
+                  - s3:ListBucket
+                  - s3:GetBucketLocation
+                Resource:
+                  - !Sub "arn:aws:s3:::${BucketName}/*"
+                  - !Sub "arn:aws:s3:::${BucketName}"
+              - Effect: Allow
+                Action:
+                  - "ssm:GetParameters"
+                  - "ssm:GetParameter"
+                Resource: "*"
 
   #Bucket allowing public website
   MainBucket:

@@ -1,5 +1,7 @@
 #!/bin/bash
 lambdaname="crudlambda"
+source ../credential.sh
+aws sts get-caller-identity | jq
 source ../exercise2/util.sh
 create_stack "apistack" "apiform.yaml"
 
