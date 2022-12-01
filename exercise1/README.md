@@ -4,10 +4,10 @@ In this exercise, a bucket was created using `Cloudformation`. This bucket is co
 
 ![alt text](https://github.com/vinixnan/cloudtest/blob/main/diagram/ex1.png?raw=true)
 
-You can open the `http://ftf.vinicius.bucket.exercise.s3-website-us-east-1.amazonaws.com/curlme.txt` or run:
+You can open the `http://ftf.vinicius.bucket.exercise1.s3-website-us-east-1.amazonaws.com/curlme.txt` or run:
 
 ```sh
-curl http://ftf.vinicius.bucket.exercise.s3-website-us-east-1.amazonaws.com/curlme.txt
+curl http://ftf.vinicius.bucket.exercise1.s3-website-us-east-1.amazonaws.com/curlme.txt
 ```
 
 ## How to easily run

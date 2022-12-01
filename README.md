@@ -7,7 +7,7 @@ A succinct description of each test. More information is in their respective fol
 | Folder  | Description | Latest build|
 |---|---|---|
 | [diagram](https://github.com/vinixnan/cloudtest/tree/main/diagram) | Has all figures and code to generate the figures | Take a look in [here](https://github.com/vinixnan/cloudtest/blob/main/diagram/diagram_generator.ipynb) |
-| [exercise1](https://github.com/vinixnan/cloudtest/tree/main/exercise1) | Create a bucket exercise | <http://ftf.vinicius.bucket.exercise.s3-website-us-east-1.amazonaws.com/curlme.txt> |
+| [exercise1](https://github.com/vinixnan/cloudtest/tree/main/exercise1) | Create a bucket exercise | <http://ftf.vinicius.bucket.exercise1.s3-website-us-east-1.amazonaws.com/curlme.txt> |
 | [exercise2](https://github.com/vinixnan/cloudtest/tree/main/exercise2) | Create a CI/CD exercise | <http://ftf.vinicius.bucket.exercise2.s3-website-us-east-1.amazonaws.com/> |
 | [extraexercise](https://github.com/vinixnan/cloudtest/tree/main/extraexercise) | A harder `Create a CI/CD exercise` where Lambda, DynamoDB, and APIGateway are employed. I hope you like | <http://ftf.vinicius.static.apisite.s3-website-us-east-1.amazonaws.com/> |
 | show_urls.sh | A simple script to take all the static website URLs | - |
