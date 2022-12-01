@@ -12,8 +12,8 @@ curl http://ftf.vinicius.bucket.exercise.s3-website-us-east-1.amazonaws.com/curl
 
 ## Files Description
 
-| File  | Description  |
-|---|---|
-| cloudform.yaml  | The cloudformation file resposible by creating the bucket and associated policies  |
-| run.sh  | Runs `aws cloudformation create-stack` and `aws s3 cp`  |
-| resources/curlme.txt | Just a simple txt file |
+| File  | Description  | Parameter |
+|---|---|---|
+| cloudform.yaml  | The cloudformation file resposible by creating the bucket and associated policies  | BucketName|
+| run.sh  | Runs `aws cloudformation create-stack` and `aws s3 cp`  | BucketName|
+| resources/curlme.txt | Just a simple txt file | - |

@@ -23,3 +23,11 @@ The following toos were considered in all the tests.
 | Jupyter Notebook  | A good way to show code. take a look in <https://github.com/vinixnan/cloudtest/blob/main/diagram/diagram_generator.ipynb> where I generate AWS diagrams for the three exercises | - |
 | Diagrams  | A python library to generate diagram as code <https://diagrams.mingrammer.com/> | - |
 | Shell Script  | Scripts to make my life easier (or not)  | - |
+
+## Outcome
+Codepipeline
+![alt text](https://github.com/vinixnan/cloudtest/blob/main/diagram/codepipeline.png?raw=true)
+![alt text](https://github.com/vinixnan/cloudtest/blob/main/diagram/codepipeline2.png?raw=true)
+
+SNS Mail
+![alt text](https://github.com/vinixnan/cloudtest/blob/main/diagram/mail.png?raw=true)
